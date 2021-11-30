@@ -3,135 +3,65 @@ package com.example.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberImagePainter
 import com.example.myapplication.ui.theme.MyApplicationTheme
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApplicationTheme {
-//                SimpleList()
-//                LazyList()
-                ScrollingList()
-            }
+            MyApplicationTheme { Text("Hi there!", Modifier.firstBaselineToTop(24.dp)) }
         }
     }
 }
 
-//1. Column은 기본적으로 스크롤을 처리하지 않기 때문에 일부 항목은 화면 외부에 있기 때문에 표시되지 않습니다.
-//@Composable
-//fun SimpleList() {
-//    Column {
-//        repeat(100) {
-//            Text("Item #$it")
-//        }
-//    }
-//}
+fun Modifier.firstBaselineToTop(firstBaselineToTop: Dp) = layout { measurable, constraints ->
+    //measurable은 Text를 나타냄
+    //constraints는 element(Text)가 가질 수 있는  width, height에 대한 min/max 범위
 
-//2. Column 내에서 스크롤할 수 있도록 verticalScroll 수정자를 추가합니다.
-//@Composable
-//fun SimpleList() {
-//    // We save the scrolling position with this state that can also
-//    // be used to programmatically scroll the list
-//    val scrollState = rememberScrollState()
-//
-//    Column(Modifier.verticalScroll(scrollState)) {
-//        repeat(100) {
-//            Text("Item #$it")
-//        }
-//    }
-//}
+    // Composable 측정
+    val placeable = measurable.measure(constraints)
 
-//3. 오직 스크린에 보이는 항목만 랜더링하는 LazyColumn을 사용
-//@Composable
-//fun LazyList() {
-//    // We save the scrolling position with this state that can also
-//    // be used to programmatically scroll the list
-//    val scrollState = rememberLazyListState()
-//
-//    LazyColumn(state = scrollState) {
-//        items(100) {
-//            Text("Item #$it")
-//        }
-//    }
-//}
+    // 측정값(갤S20 기준 - placeable.width:178px | placeable.height:65px
 
-@Composable
-fun ImageListItem(index: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Image(
-            painter = rememberImagePainter( //coil
-                data = "https://developer.android.com/images/brand/Android_Robot.png"
-            ),
-            contentDescription = "Android Logo",
-            modifier = Modifier.size(50.dp)
-        )
-        Spacer(Modifier.width(10.dp))
-        Text("Item #$index", style = MaterialTheme.typography.subtitle1)
+    //Check the composable has a first baseline
+    check(placeable[FirstBaseline] != AlignmentLine.Unspecified)
+    val firstBaseline = placeable[FirstBaseline]
+
+    // 측정값 - firstBaseline: 51px
+
+    // Height of the composable with padding - first baseline
+
+    val placeableY = firstBaselineToTop.roundToPx() - firstBaseline //72 - 51 = 21
+    val height = placeable.height + placeableY //65 + 21 = 76
+
+    // 측정값 - firstBaselineToTop.roundToPx(): 72px, height: 76px
+
+    layout(placeable.width, height) {
+        // Where the composable gets placed
+        placeable.placeRelative(0, placeableY)
     }
 }
 
+
+@Preview
 @Composable
-fun ScrollingList() {
-    val listSize = 100
-    // We save the scrolling position with this state
-    val scrollState = rememberLazyListState()
-    // We save the coroutine scope where our animated scroll will be executed
-    val coroutineScope = rememberCoroutineScope()
-
-    Column {
-        Row {
-            Button(onClick = {
-                coroutineScope.launch {
-                    // 0 is the first item index
-                    scrollState.animateScrollToItem(0)
-                }
-            }) {
-                Text("Scroll to the top")
-            }
-
-            Button(onClick = {
-                coroutineScope.launch {
-                    // listSize - 1 is the last index of the list
-                    scrollState.animateScrollToItem(listSize - 1)
-                }
-            }) {
-                Text("Scroll to the end")
-            }
-        }
-
-        LazyColumn(state = scrollState) {
-            items(listSize) {
-                ImageListItem(it)
-            }
-        }
-    }
+fun TextWithPaddingToBaselinePreview() {
+    MyApplicationTheme { Text("Hi there!", Modifier.firstBaselineToTop(24.dp)) }
 }
 
 @Preview
 @Composable
-fun LayoutsCodelabPreview() {
-    MyApplicationTheme {
-//        SimpleList()
-//        LazyList()
-        ScrollingList()
-    }
+fun TextWithNormalPaddingPreview() {
+    MyApplicationTheme { Text("Hi there!", Modifier.padding(top = 24.dp)) }
 }
+
