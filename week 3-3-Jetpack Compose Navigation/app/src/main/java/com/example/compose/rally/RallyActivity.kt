@@ -19,15 +19,9 @@ package com.example.compose.rally
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -44,6 +38,9 @@ import com.example.compose.rally.ui.bills.BillsBody
 import com.example.compose.rally.ui.components.RallyTabRow
 import com.example.compose.rally.ui.overview.OverviewBody
 import com.example.compose.rally.ui.theme.RallyTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * This Activity recreates part of the Rally Material Study from
@@ -70,7 +67,11 @@ fun RallyNavHost(
     ) {
         composable(RallyScreen.Overview.name) {
             OverviewBody(
-                onClickSeeAllAccounts = { navController.navigate(RallyScreen.Accounts.name) },
+                onClickSeeAllAccounts = { runBlocking {
+                    withContext(Dispatchers.Main) {
+                        navController.navigate(RallyScreen.Accounts.name)
+                    }
+                } },
                 onClickSeeAllBills = { navController.navigate(RallyScreen.Bills.name) },
                 onAccountClick = { name ->
                     navigateToSingleAccount(navController, name)
