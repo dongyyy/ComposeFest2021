@@ -52,7 +52,7 @@ class TopAppBarTest {
 
         composeTestRule
             .onNode(
-                hasText(RallyScreen.Accounts.name.toUpperCase()) and
+                hasText(RallyScreen.Accounts.name.uppercase()) and
                         hasParent(
                             hasContentDescription(RallyScreen.Accounts.name)
                         ),
@@ -60,5 +60,17 @@ class TopAppBarTest {
             )
             .assertExists()
 
+    }
+
+    @Test
+    fun clickingTest_currentLabelExists() {
+        val allScreens = RallyScreen.values().toList()
+        composeTestRule.setContent {
+            RallyTopAppBar(
+                allScreens = allScreens,
+                onTabSelected = { },
+                currentScreen = RallyScreen.Accounts
+            )
+        }
     }
 }
